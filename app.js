@@ -27,6 +27,10 @@ passport.deserializeUser(function(obj, cb) {
 // View Engine
 app.set("view engine", "ejs");
 
+//routes
+const organizationRoute = require('./routes/organizationRoute')
+
+app.use('',organizationRoute)
 // Home route
 app.get("/", (req, res) => {
     res.render("home.ejs");
@@ -61,8 +65,14 @@ app.get("/auth/google/callback", passport.authenticate('google', {
         });
 
         if (duplicateEmail) {
-            return res.status(400).send("You already registered with this email");
-        }
+               // Generate JWT token
+            const token = jwt.sign({ id: duplicateEmail.id }, process.env.JWT_SECRET, {
+            expiresIn: '30d'
+        });
+            res.cookie('token', token);
+            res.redirect("/addOrganization");
+
+        }else{
 
         // Create a new user in the database
         const data = await users.create({
@@ -72,17 +82,14 @@ app.get("/auth/google/callback", passport.authenticate('google', {
         });
 
         // Generate JWT token
-        const token = jwt.sign({ id: userProfile.id }, process.env.JWT_SECRET, {
+        const token = jwt.sign({ id: data.id }, process.env.JWT_SECRET, {
             expiresIn: '30d'
         });
 
         // Set the JWT token in cookies
-        res.cookie('jwttoken', token, { httpOnly: true });
-
-        res.status(200).json({
-            message: 'Logged in Successfully!! ❤',
-            data
-        });
+        res.cookie('token', token);
+        res.redirect("/addOrganization");
+    }
     } catch (error) {
         console.error("Error during user registration or JWT token creation:", error);
         res.status(500).send("Internal server error");
