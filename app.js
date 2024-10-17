@@ -29,8 +29,11 @@ app.set("view engine", "ejs");
 
 //routes
 const organizationRoute = require('./routes/organizationRoute')
+const authRoute = require('./routes/authRoute')
 
 app.use('',organizationRoute)
+app.use('',authRoute)
+
 // Home route
 app.get("/", (req, res) => {
     res.render("home.ejs");
@@ -70,7 +73,7 @@ app.get("/auth/google/callback", passport.authenticate('google', {
             expiresIn: '30d'
         });
             res.cookie('token', token);
-            res.redirect("/addOrganization");
+            res.redirect("/organization");
 
         }else{
 
@@ -88,7 +91,7 @@ app.get("/auth/google/callback", passport.authenticate('google', {
 
         // Set the JWT token in cookies
         res.cookie('token', token);
-        res.redirect("/addOrganization");
+        res.redirect("/organization");
     }
     } catch (error) {
         console.error("Error during user registration or JWT token creation:", error);

@@ -60,22 +60,45 @@ exports.createOrganization = async (req, res,next) => {
         await user[0].save();
         req.organizationNumber = organizationNumber
         next();
-
-        res.status(200).send("Organization details added successfully!");
     } catch (error) {
         console.error("Error creating organization table or inserting data:", error);
         res.status(500).send("Error occurred while creating organization");
     }
 }
 
-exports.createForumTable = async(req,res)=>{
+exports.CreateQuestionTable = async(req,res,next)=>{
     const organizationNumber = req.organizationNumber
     //create table
     await sequelize.query(
-        `create table forum_${organizationNumber}(
+        `create table question_${organizationNumber}(
         id int not null primary key auto_increment,
-        questions varchar(255),
-        answer varchar(255)
+        title varchar(255),
+        description TEXT,
+        userId INT NOT NULL references users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`
     )
+    next()
+}
+
+exports.createAnswerTable = async(req,res)=>{
+    const organizationNumber = req.organizationNumber
+    await sequelize.query(
+        `CREATE TABLE answer_${organizationNumber}(
+        id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+        answerText TEXT,
+        userId INT NOT NULL REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        questionId INT NOT NULL REFERENCES question_${organizationNumber}(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,{
+            type: sequelize.QueryTypes.CREATE
+        }
+    )
+    res.redirect("/dashboard")
+}
+
+exports.renderDashboard = (req,res)=>{
+    res.render('dashboard');
 }

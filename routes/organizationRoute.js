@@ -1,7 +1,11 @@
 const express = require('express');
-const { renderAddOrganizationPage, createOrganization, createForumTable } = require('../controller/organization/organizationController');
+const { renderAddOrganizationPage, createOrganization, CreateQuestionTable, createAnswerTable, renderDashboard } = require('../controller/organization/organizationController');
 const { isAuthenticated } = require('../middleware/isAuthenticated');
 const router = express.Router();
-router.route("/addOrganization").get(isAuthenticated,renderAddOrganizationPage).post(isAuthenticated,createOrganization,createForumTable)
+router.route("/organization")
+.get(isAuthenticated,renderAddOrganizationPage)
+.post(isAuthenticated,createOrganization,CreateQuestionTable,createAnswerTable)
+
+router.route('/dashboard').get(isAuthenticated,renderDashboard)
 
 module.exports = router
