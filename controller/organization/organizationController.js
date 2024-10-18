@@ -74,6 +74,7 @@ exports.CreateQuestionTable = async(req,res,next)=>{
         id int not null primary key auto_increment,
         title varchar(255),
         description TEXT,
+        questionImage varchar(255),
         userId INT NOT NULL references users(id) ON DELETE CASCADE ON UPDATE CASCADE,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -99,6 +100,42 @@ exports.createAnswerTable = async(req,res)=>{
     res.redirect("/dashboard")
 }
 
-exports.renderDashboard = (req,res)=>{
-    res.render('dashboard');
+exports.renderDashboard = async(req,res)=>{
+    // let currentUserRole = 'admin';
+    // const userId = req.userId
+    // const users = await users.findAll({
+    //     where:{
+    //         id:userId
+    //     }
+    // })
+
+    res.render('dashboard/index.ejs',{currentUserRole});
+}
+
+exports.renderForumPage = async(req,res)=>{
+    res.render('dashboard/forum');
+}
+exports.renderAskQuestion = async(req,res)=>{
+    res.render('dashboard/askQuestion')
+}
+
+exports.createQuestion = async(req,res)=>{
+    const {title,description} = req.body
+    const file = req.file?.filename
+    const userId = req.userId
+    const organizationNumber = req.user.currentOrgNumber
+    if(!title || !description){
+        res.status(400).send({message:'Please fill in all fields.'})
+    }
+
+    await sequelize.query(
+        `
+        INSERT INTO question_${organizationNumber} (title,description,questionImage,userId) 
+        VALUES (?,?,?,?)
+        `,{
+            replacements: [title,description,file,userId],
+            type: sequelize.QueryTypes.INSERT
+        }
+    )
+    res.redirect("/forum")
 }

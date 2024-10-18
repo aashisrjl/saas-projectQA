@@ -34,6 +34,8 @@ const authRoute = require('./routes/authRoute')
 app.use('',organizationRoute)
 app.use('',authRoute)
 
+
+app.use(express.static('public/'));
 // Home route
 app.get("/", (req, res) => {
     res.render("home.ejs");
