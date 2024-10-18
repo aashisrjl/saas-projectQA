@@ -36,6 +36,7 @@ app.use('',authRoute)
 
 
 app.use(express.static('public/'));
+app.use(express.static('uploads/'));
 // Home route
 app.get("/", (req, res) => {
     res.render("home.ejs");

@@ -1,3 +1,4 @@
+const { QueryTypes } = require("sequelize");
 const { sequelize, users } = require("../../model");
 const crypto = require("crypto");
 exports.renderAddOrganizationPage = (req, res) => {
@@ -113,7 +114,21 @@ exports.renderDashboard = async(req,res)=>{
 }
 
 exports.renderForumPage = async(req,res)=>{
-    res.render('dashboard/forum');
+    const userId = req.userId
+    const organizationNumber = req.user.currentOrgNumber
+    const questions = await sequelize.query(
+        `SELECT * FROM question_${organizationNumber} 
+        `,{
+            type: sequelize.QueryTypes.SELECT
+        }
+    )
+    const user = await sequelize.query(
+        `SELECT username,email FROM users WHERE id =?`,{
+            type: sequelize.QueryTypes.SELECT,
+            replacements:[questions[0].userId]
+        }
+    )
+    res.render('dashboard/forum',{questions,userId,user});
 }
 exports.renderAskQuestion = async(req,res)=>{
     res.render('dashboard/askQuestion')
@@ -121,7 +136,10 @@ exports.renderAskQuestion = async(req,res)=>{
 
 exports.createQuestion = async(req,res)=>{
     const {title,description} = req.body
-    const file = req.file?.filename
+    let file = req.file?.filename
+    if(!file){
+        file = null
+    }
     const userId = req.userId
     const organizationNumber = req.user.currentOrgNumber
     if(!title || !description){
@@ -139,3 +157,57 @@ exports.createQuestion = async(req,res)=>{
     )
     res.redirect("/forum")
 }
+exports.deleteQuestion = async(req,res)=>{
+    const questionId = req.params.id
+    const organizationNumber = req.user.currentOrgNumber
+    await sequelize.query(
+        `
+        DELETE FROM question_${organizationNumber} 
+        WHERE id=?
+        `,{
+            type: sequelize.QueryTypes.DELETE,
+            replacements:[questionId]
+        }
+    )
+    res.redirect('/forum');
+
+}
+exports.renderSingleQuestion = async (req, res) => {
+    const userId = req.userId;
+    const organizationNumber = req.user.currentOrgNumber;
+    const questionId = req.params.id;
+  
+    try {
+      const questionResult = await sequelize.query(
+        `
+        SELECT * FROM question_${organizationNumber}
+        WHERE id = ?
+        `,
+        {
+          type: sequelize.QueryTypes.SELECT,
+          replacements: [questionId],
+        }
+      );
+  
+      const question = questionResult[0]; 
+
+      const userResult = await sequelize.query(
+        `
+        SELECT * FROM users
+        WHERE id = ?
+        `,
+        {
+          type: sequelize.QueryTypes.SELECT,
+          replacements: [userId],
+        }
+      );
+  
+      const user = userResult[0]; 
+      res.render("dashboard/singleQuestion", { question, user });
+    } catch (error) {
+      console.error("Error fetching question or user:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  };
+  
+

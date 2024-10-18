@@ -107,21 +107,36 @@
       </header>
       <!--  Header End -->
       <div class="container-fluid">
-          <div class="card">
+        <div class="card">
           <div class="card-body">
-            <h5 class="card-title fw-semibold mb-4"> Q: <%- question[0].title %> </h5>
-            <p class="mb-0"> <%- question[0].description %> </p>
+            <h5 class="card-title fw-semibold mb-4"> Q: <%- question.title %> </h5>
+            <p class="mb-0"> <%- question.description %> </p>
       
-            <div id="carouselExampleFade" class="carousel slide carousel-fade">
+            <!-- Carousel for question image -->
+            <% if (question.questionImage) { %>
+              <div id="carouselExampleFade" class="carousel slide carousel-fade">
                 <div class="carousel-inner">
-                <% questionImages.forEach((image)=>{ %>
-                      <div class="carousel-item active">
-                    <img src="http://localhost:3000/<%-image.questionImage %> " class="d-block w-100" alt="..." height="400px" width="60%" style="margin-top: 30px;">
+                  <div class="carousel-item active">
+                    <img 
+                      src="/<%- question.questionImage %>" 
+                      class="d-block w-100" 
+                      alt="Question Image" 
+                      height="400px" 
+                      width="30%" 
+                      style="margin-top: 30px;">
                   </div>
-                <% }) %>
-               
                 </div>
-                
+              </div>
+            <% } else { %>
+              <p>No image available for this question.</p>
+            <% } %>
+            <div style="font-weight: bold;">
+            <div style="font-style: italic; color: green;"><%= user.username %> </div>
+              <div><%=  user.email %></div>
+            </div>
+          </div>
+        </div>
+      </div>  
                 <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleFade" data-bs-slide="prev">
                   <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                   <span class="visually-hidden">Previous</span>
@@ -134,19 +149,6 @@
          
           </div>
         </div>
-      <% answers.forEach((answer)=>{ %>
-        <div class="card">
-          <div class="card-body">
-            <p class="mb-0">  Answer  : <%- answer.answer %> </p>
-          <i style="font-size: 13px;">Answered By : <%- answer.username %></i><br>
-          <i style="font-size: 12px;"><%- answer.created_at.toString().slice(0,15) %></i>
-          
-         <% if(answer.userId == userId){ %>
-          <a href="/answer/<%- answer.id %>">Delete</a>
-        <% } %>
-          </div>
-        </div>  
-       <% }) %> 
         <h4>Your Answer
         </h4>
     <form id="answerForm">
@@ -155,7 +157,7 @@
        
         <p><br></p>
       </div>
-      <input type="hidden" id="questionId" name="questionId" value="<%- question[0].id %>">
+      <input type="hidden" id="questionId" name="questionId" value="<%- question.id %>">
       <button type="submit">submit</button>
     </form>
       </div>
