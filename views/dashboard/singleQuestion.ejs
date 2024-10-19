@@ -82,7 +82,7 @@
           </ul>
           <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
             <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
-              <a href="/question" class="btn btn-primary">Ask Question</a>
+              <a href="/askQuestion" class="btn btn-primary">Ask Question</a>
               <li class="nav-item dropdown">
                 <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2" data-bs-toggle="dropdown"
                   aria-expanded="false">
@@ -107,36 +107,21 @@
       </header>
       <!--  Header End -->
       <div class="container-fluid">
-        <div class="card">
+          <div class="card">
           <div class="card-body">
             <h5 class="card-title fw-semibold mb-4"> Q: <%- question.title %> </h5>
             <p class="mb-0"> <%- question.description %> </p>
-      
-            <!-- Carousel for question image -->
-            <% if (question.questionImage) { %>
-              <div id="carouselExampleFade" class="carousel slide carousel-fade">
+      <%if(question.questionImage !=null){ %>
+            <div id="carouselExampleFade" class="carousel slide carousel-fade">
                 <div class="carousel-inner">
-                  <div class="carousel-item active">
-                    <img 
-                      src="/<%- question.questionImage %>" 
-                      class="d-block w-100" 
-                      alt="Question Image" 
-                      height="400px" 
-                      width="30%" 
-                      style="margin-top: 30px;">
+               
+                      <div class="carousel-item active">
+                    <img src="http://localhost:3000/<%-question.questionImage %> " class="d-block w-100" alt="Image of question not available" height="400px" width="60%" style="margin-top: 30px;">
                   </div>
+               
+               
                 </div>
-              </div>
-            <% } else { %>
-              <p>No image available for this question.</p>
-            <% } %>
-            <div style="font-weight: bold;">
-            <div style="font-style: italic; color: green;"><%= user.username %> </div>
-              <div><%=  user.email %></div>
-            </div>
-          </div>
-        </div>
-      </div>  
+                
                 <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleFade" data-bs-slide="prev">
                   <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                   <span class="visually-hidden">Previous</span>
@@ -146,16 +131,33 @@
                   <span class="visually-hidden">Next</span>
                 </button>
               </div>
+              <% } %>
          
           </div>
+          <div style="display: flex;justify-content: space-between;padding: 0 15px 0 15px; font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;">
+            <h5><%- user.username %></h5> 
+            <p><%- user.email %></p>
+          </div>
         </div>
+      <% answers.forEach((answer)=>{ %>
+        <div class="card">
+          <div class="card-body">
+            <p class="mb-0">  Answer  : <%- answer.answerText %> </p>
+          <i style="font-size: 13px;">Answered By : <%- user.username %></i><br>
+          <i style="font-size: 12px;"><%- answer.createdAt.toString().slice(0,15) %></i>
+          
+         <% if(answer.userId == user.id){ %>
+          <a href="/answer/<%- answer.id %>">Delete</a>
+        <% } %>
+          </div>
+        </div>  
+       <% }) %> 
         <h4>Your Answer
         </h4>
     <form id="answerForm">
       <div id="editor">
         <p >You answer goes here....</p>
-       
-        <p><br></p>
+        <p></p>
       </div>
       <input type="hidden" id="questionId" name="questionId" value="<%- question.id %>">
       <button type="submit">submit</button>
@@ -180,7 +182,6 @@
 
 
 document.getElementById("answerForm").addEventListener("submit", async function(event){
-  event.preventDefault()
   const answerContent = getEditorContent()
   const questionId = document.getElementById("questionId").value
   
@@ -189,10 +190,10 @@ document.getElementById("answerForm").addEventListener("submit", async function(
     headers : {
       'Content-Type' : 'application/json'
     },
-    body : JSON.stringify({text : answerContent,questionId : questionId})
+    body : JSON.stringify({answerText : answerContent,questionId : questionId})
   })
 const data =   await response.json()
-if(data.status == 200){
+if(data){
   window.location.reload()
 }else{
   alert("Something went wrong")

@@ -203,11 +203,55 @@ exports.renderSingleQuestion = async (req, res) => {
       );
   
       const user = userResult[0]; 
-      res.render("dashboard/singleQuestion", { question, user });
+
+      const answers = await sequelize.query(
+        `SELECT * FROM answer_${organizationNumber} where questionId=?`,
+        {type: QueryTypes.SELECT,
+            replacements:[questionId]
+        }
+      )
+      res.render("dashboard/singleQuestion", { question, user,answers});
     } catch (error) {
       console.error("Error fetching question or user:", error);
       res.status(500).send("Internal Server Error");
     }
   };
   
+  exports.handleAnswer = async(req,res)=>{
+    const {questionId,answerText} = req.body
+    const userId = req.userId
+    const organizationNumber = req.user.currentOrgNumber
+    console.log(questionId,userId,answerText)
+     await sequelize.query(
+        `INSERT INTO answer_${organizationNumber} (answerText,userId,questionId)
+        VALUES(?,?,?)`,{
+            type: QueryTypes.INSERT,
+            replacements:[answerText,userId,questionId]
+        }
+    )
+    res.redirect(`/question/${questionId}`)
+  }
+
+  exports.deleteAnswer = async(req,res)=>{
+    const answerId = req.params.id
+    const userId = req.userId
+    const organizationNumber = req.user.currentOrgNumber
+    const answer = await sequelize.query(
+        `select * from answer_${organizationNumber}
+        where id=?`,{
+            type:QueryTypes.SELECT,
+            replacements:[answerId]
+        }
+    )
+
+    await sequelize.query(
+        `DELETE FROM answer_${organizationNumber}
+        WHERE id = ? AND userId=?`,{
+            type: QueryTypes.DELETE,
+            replacements:[answerId,userId]
+        }
+    )
+    console.log(answer)
+    res.redirect(`/question/${answer[0].questionId}`)
+  }
 
