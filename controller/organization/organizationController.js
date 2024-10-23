@@ -117,18 +117,25 @@ exports.renderForumPage = async(req,res)=>{
     const userId = req.userId
     const organizationNumber = req.user.currentOrgNumber
     const questions = await sequelize.query(
-        `SELECT * FROM question_${organizationNumber} 
-        `,{
-            type: sequelize.QueryTypes.SELECT
-        }
-    )
-    const user = await sequelize.query(
-        `SELECT username,email FROM users WHERE id =?`,{
+        `SELECT question_${organizationNumber}.*, users.username, users.email 
+         FROM question_${organizationNumber} 
+         JOIN users ON users.id = question_${organizationNumber}.userId`, 
+        {
             type: sequelize.QueryTypes.SELECT,
-            replacements:[questions[0].userId]
         }
-    )
-    res.render('dashboard/forum',{questions,userId,user});
+    );
+    
+    // Filter questions based on userId if needed
+    const userQuestions = questions.filter(q => q.userId === userId);
+    
+    res.render('dashboard/forum', { questions: userQuestions, userId });
+    
+    // const user = await sequelize.query(
+    //     `SELECT username,email FROM users WHERE id =?`,{
+    //         type: sequelize.QueryTypes.SELECT,
+    //         replacements:[questions[0].userId]
+    //     }
+    // )
 }
 exports.renderAskQuestion = async(req,res)=>{
     res.render('dashboard/askQuestion')
@@ -253,5 +260,48 @@ exports.renderSingleQuestion = async (req, res) => {
     )
     console.log(answer)
     res.redirect(`/question/${answer[0].questionId}`)
+  }
+
+  exports.renderMyOrgs = async(req,res)=>{
+    const currentOrgNumber = req.user.currentOrgNumber
+    const userId = req.userId
+    const userOrgNumber = await sequelize.query(
+        `SELECT organizationNumber FROM  users_org where userId=?` ,
+        {
+            type: QueryTypes.SELECT,
+            replacements: [userId]
+        }
+    )
+
+    let orgDatas = [];
+    for(var i=0;i<userOrgNumber.length;i++){
+      const [orgData] =   await sequelize.query(
+            `SELECT * FROM organization_${userOrgNumber[i].organizationNumber} `
+        )
+        orgDatas.push({...orgData[0],organizationNumber: userOrgNumber[i].organizationNumber});
+        
+    }
+    res.render('dashboard/myOrgs.ejs',{orgDatas,currentOrgNumber})
+
+  }
+
+  exports.deleteOrganization = async(req,res)=>{
+    const organizationNumber = req.user.currentOrgNumber
+    const selectOrganization = req.params.id
+    await sequelize.query(`DROP TABLE organization_${selectOrganization}`,{
+        type: QueryTypes.DROP
+    })
+   
+    await sequelize.query(`DROP TABLE question_${selectOrganization}`,{
+        type: QueryTypes.DROP
+    })
+    await sequelize.query(`DROP TABLE answer_${selectOrganization}`,{
+        type: QueryTypes.DROP
+    })
+    await sequelize.query(`DELETE FROM  users_org where organizationNumber=?`,{
+        type: QueryTypes.DELETE,
+        replacements:[selectOrganization]
+    })
+    res.redirect("/myorgs")
   }
 

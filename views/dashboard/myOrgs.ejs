@@ -95,7 +95,7 @@
                       <i class="ti ti-list-check fs-6"></i>
                       <p class="mb-0 fs-3">My Organizations</p>
                     </a>
-                    <a href="./authentication-login.html" class="btn btn-outline-primary mx-3 mt-2 d-block">Logout</a>
+                    <a href="/logout" class="btn btn-outline-primary mx-3 mt-2 d-block">Logout</a>
                   </div>
                 </div>
               </li>
@@ -150,9 +150,9 @@
                     <tbody>
                 <% orgDatas.forEach((orgData,i)=>{ %>
                     <tr>
-                        <td class="border-bottom-0"><h6 class="fw-semibold mb-0"><%-i %></h6></td>
+                        <td class="border-bottom-0"><h6 class="fw-semibold mb-0"><%-i+1 %></h6></td>
                         <td class="border-bottom-0">
-                            <h6 class="fw-semibold mb-1"><%- orgData.name %></h6>
+                            <h6 class="fw-semibold mb-1"><%- orgData.organizationName %></h6>
                             <div class="d-flex align-items-center gap-2">
                                 <span class="badge bg-danger rounded-3 fw-semibold"><%-orgData.organizationNumber == currentOrgNumber ? "Current Org" : ""  %></span>
                               </div>                      

@@ -79,7 +79,7 @@
           </ul>
           <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
             <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
-              <a href="/question" class="btn btn-primary">Ask Question</a>
+              <a href="/askQuestion" class="btn btn-primary">Ask Question</a>
               <li class="nav-item dropdown">
                 <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2" data-bs-toggle="dropdown"
                   aria-expanded="false">
@@ -91,7 +91,7 @@
                       <i class="ti ti-list-check fs-6"></i>
                       <p class="mb-0 fs-3">My Organizations</p>
                     </a>
-                    <a href="./authentication-login.html" class="btn btn-outline-primary mx-3 mt-2 d-block">Logout</a>
+                    <a href="/logout" class="btn btn-outline-primary mx-3 mt-2 d-block">Logout</a>
                   </div>
                 </div>
               </li>
@@ -106,7 +106,7 @@
           <div class="card-body">
             <h5 class="card-title fw-semibold mb-4"> <%- question.title %></h5>
             <p class="mb-0"><%- question.description.slice(0,300) %>... </p>
-            <i class="mb-0">Asked By : <%- user[0].username %> </i> <br>
+            <i class="mb-0">Asked By : <%- question.username %> </i> <br>
             <i class="mb-0" style="font-size: 12px;">Created at : <%- question.createdAt.toString().slice(0,15) %> </i> <br>
             <button style="margin-top: 20px;background-color: skyblue;color: white;padding: 4px;" onclick="window.location.href= '/question/<%- question.id %>'" >See More</button>
            
