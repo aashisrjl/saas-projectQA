@@ -1,8 +1,15 @@
-const { QueryTypes } = require("sequelize");
+const { QueryTypes, where } = require("sequelize");
 const { sequelize, users } = require("../../model");
 const crypto = require("crypto");
 const sendEmail = require("../../sevices/sendMail");
-exports.renderAddOrganizationPage = (req, res) => {
+
+exports.renderAddOrganizationPage = async(req, res) => {
+    // check id the user have already one organization
+   const haveOrg = req.user.currentOrgNumber
+    if(haveOrg){
+        res.redirect("/dashboard")
+        return
+    }
     res.render("organization.ejs");
 }
 const randomNumber = ()=>{
@@ -48,8 +55,8 @@ exports.createOrganization = async (req, res,next) => {
             id int not null primary key auto_increment,
             userId int references users(id) on delete cascade on update cascade,
             token varchar(255) not null,
-            createdAt timestamps default current_timestamps,
-            updatedAt timestamps default current_timestamps
+            createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )`,{
                 type: QueryTypes.CREATE
             })
@@ -354,15 +361,51 @@ exports.renderSingleQuestion = async (req, res) => {
     res.render("dashboard/invite");
   }
 
+  //generate token using crypto
+  function generateToken(length){
+    return crypto.randomBytes(length).toString('hex')
+  }
+
   exports.handleInvite = async(req,res)=>{
-    const {email:inviteEmail}= req.body
+    const {email:receiverEmail}= req.body
     const userId = req.userId
     const currentOrg = req.user.currentOrgNumber
     const userEmail = req.user.email
-    sendEmail({
-        to: inviteEmail,
-        subject: "Invititation from user",
-        text: "http://localhost:3000/login"
+
+    const token = generateToken(10);
+    // table insert
+    await sequelize.query(`
+        INSERT INTO invitation_${currentOrg} (userId,token) VALUES(?,?)`,{
+            type:QueryTypes.INSERT,
+            replacements:[userId,token]
+        })
+
+    await sendEmail({
+        email: receiverEmail,
+        subject: `INVITATION TO JOIN SAAS ORGANIZATION_${currentOrg}`,
+        text: `http://localhost:3000/accept-invite?org=${currentOrg}&token=${token}`
     })
+    res.send("invited success")
+  }
+
+  exports.handleInviteAcceptance = async(req,res)=>{
+    const userId = req.userId
+    const currentOrg = req.user.currentOrgNumber
+    const {org,token}= req.query
+
+   const [exists] =  await sequelize.query(`
+        select * from invitation_${org} where token=? `,{
+            type: QueryTypes.SELECT,
+            replacements:[token]
+        })
+        if(exists){
+            //change the current org value of the requesting user
+            const userData = await users.findByPk(userId)
+                userData.currentOrgNumber = org;
+                await userData.save();
+                res.redirect("/forum")
+            }else{
+                res.send("Invalid invitation link");
+            }
   }
 

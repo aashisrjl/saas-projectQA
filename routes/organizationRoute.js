@@ -14,7 +14,8 @@ const { renderAddOrganizationPage,
     renderMyOrgs, 
     deleteOrganization, 
     renderInvite, 
-    handleInvite } = require('../controller/organization/organizationController');
+    handleInvite, 
+    handleInviteAcceptance} = require('../controller/organization/organizationController');
 const { isAuthenticated } = require('../middleware/isAuthenticated');
 const {multer,storage} = require('../middleware/multerConfig')
 const upload = multer({storage: storage})
@@ -36,5 +37,6 @@ router.route('/answer/:id').get(isAuthenticated,deleteAnswer)
 router.route('/myorgs').get(isAuthenticated,renderMyOrgs)
 
 router.route("/invite").get(isAuthenticated,renderInvite).post(isAuthenticated,handleInvite)
+router.route("/accept-invite").get(isAuthenticated,handleInviteAcceptance);
 
 module.exports = router
