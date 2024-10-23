@@ -1,5 +1,20 @@
 const express = require('express');
-const { renderAddOrganizationPage, createOrganization, CreateQuestionTable, createAnswerTable, renderDashboard, renderForumPage, renderAskQuestion, createQuestion, deleteQuestion, renderSingleQuestion, handleAnswer, deleteAnswer, renderMyOrgs, deleteOrganization } = require('../controller/organization/organizationController');
+const { renderAddOrganizationPage, 
+    createOrganization, 
+    CreateQuestionTable, 
+    createAnswerTable, 
+    renderDashboard, 
+    renderForumPage, 
+    renderAskQuestion, 
+    createQuestion, 
+    deleteQuestion, 
+    renderSingleQuestion, 
+    handleAnswer, 
+    deleteAnswer, 
+    renderMyOrgs, 
+    deleteOrganization, 
+    renderInvite, 
+    handleInvite } = require('../controller/organization/organizationController');
 const { isAuthenticated } = require('../middleware/isAuthenticated');
 const {multer,storage} = require('../middleware/multerConfig')
 const upload = multer({storage: storage})
@@ -19,5 +34,7 @@ router.route('/question/:id').get(isAuthenticated,renderSingleQuestion)
 router.route('/answer').post(isAuthenticated,handleAnswer)
 router.route('/answer/:id').get(isAuthenticated,deleteAnswer)
 router.route('/myorgs').get(isAuthenticated,renderMyOrgs)
+
+router.route("/invite").get(isAuthenticated,renderInvite).post(isAuthenticated,handleInvite)
 
 module.exports = router

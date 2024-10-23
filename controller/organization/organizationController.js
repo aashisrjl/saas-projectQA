@@ -1,6 +1,7 @@
 const { QueryTypes } = require("sequelize");
 const { sequelize, users } = require("../../model");
 const crypto = require("crypto");
+const sendEmail = require("../../sevices/sendMail");
 exports.renderAddOrganizationPage = (req, res) => {
     res.render("organization.ejs");
 }
@@ -40,6 +41,18 @@ exports.createOrganization = async (req, res,next) => {
             )`, 
             { type: sequelize.QueryTypes.CREATE }
         );
+
+        //create invitation table
+        await sequelize.query(`
+            create table  invitation_${organizationNumber}(
+            id int not null primary key auto_increment,
+            userId int references users(id) on delete cascade on update cascade,
+            token varchar(255) not null,
+            createdAt timestamps default current_timestamps,
+            updatedAt timestamps default current_timestamps
+            )`,{
+                type: QueryTypes.CREATE
+            })
 
         // You can also insert the provided organization data right after creating the table
         await sequelize.query(
@@ -286,8 +299,11 @@ exports.renderSingleQuestion = async (req, res) => {
   }
 
   exports.deleteOrganization = async(req,res)=>{
-    const organizationNumber = req.user.currentOrgNumber
+    const currentOrgNumber = req.user.currentOrgNumber
     const selectOrganization = req.params.id
+    const userId = req.userId
+
+
     await sequelize.query(`DROP TABLE organization_${selectOrganization}`,{
         type: QueryTypes.DROP
     })
@@ -302,6 +318,51 @@ exports.renderSingleQuestion = async (req, res) => {
         type: QueryTypes.DELETE,
         replacements:[selectOrganization]
     })
+
+    //select all orgs number
+    const userOrgNumber = await sequelize.query(
+        `SELECT organizationNumber FROM  users_org where userId=?` ,
+        {
+            type: QueryTypes.SELECT,
+            replacements: [userId]
+        }
+    )
+    //access last organization number
+    const n = userOrgNumber.length
+    const currentorg = userOrgNumber[n-1].organizationNumber;
+    console.log("last",userOrgNumber[n-1].organizationNumber)
+    //update currentorg number
+    await sequelize.query(
+        `update users set currentOrgNumber=?
+        where id=?`,{
+            type:QueryTypes.UPDATE,
+            replacements:[currentorg,userId]
+        }
+            
+    )
+
+    // validating current org
+    if(currentOrgNumber == selectOrganization){
+        //switch cuurrent oragnization to previous orgs
+
+    }
     res.redirect("/myorgs")
+  }
+
+
+  exports.renderInvite = async(req,res)=>{
+    res.render("dashboard/invite");
+  }
+
+  exports.handleInvite = async(req,res)=>{
+    const {email:inviteEmail}= req.body
+    const userId = req.userId
+    const currentOrg = req.user.currentOrgNumber
+    const userEmail = req.user.email
+    sendEmail({
+        to: inviteEmail,
+        subject: "Invititation from user",
+        text: "http://localhost:3000/login"
+    })
   }
 
