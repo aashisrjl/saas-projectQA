@@ -136,19 +136,14 @@ exports.renderDashboard = async(req,res)=>{
 exports.renderForumPage = async(req,res)=>{
     const userId = req.userId
     const organizationNumber = req.user.currentOrgNumber
-    const questions = await sequelize.query(
-        `SELECT question_${organizationNumber}.*, users.username, users.email 
-         FROM question_${organizationNumber} 
-         JOIN users ON users.id = question_${organizationNumber}.userId`, 
-        {
-            type: sequelize.QueryTypes.SELECT,
-        }
-    );
-    
-    // Filter questions based on userId if needed
-    const userQuestions = questions.filter(q => q.userId === userId);
-    
-    res.render('dashboard/forum', { questions: userQuestions, userId });
+   const questions = await sequelize.query(`SELECT question_${organizationNumber}.*,users.username 
+    FROM question_${organizationNumber} 
+    JOIN users ON 
+    question_${organizationNumber}.userId = users.id`,{
+        type : QueryTypes.SELECT
+    })
+     
+    res.render('dashboard/forum', { questions, userId });
     
     // const user = await sequelize.query(
     //     `SELECT username,email FROM users WHERE id =?`,{
@@ -244,11 +239,27 @@ exports.renderSingleQuestion = async (req, res) => {
     }
   };
   
+  // handle answer
   exports.handleAnswer = async(req,res)=>{
     const {questionId,answerText} = req.body
     const userId = req.userId
     const organizationNumber = req.user.currentOrgNumber
-    console.log(questionId,userId,answerText)
+    // accessing questioned person email using question Id
+    const [data] = await sequelize.query(`
+        select * from question_${organizationNumber} where id=?`,{
+            type: QueryTypes.SELECT,
+            replacements:[questionId]
+        })
+        const answeredUser = await users.findByPk(userId);
+        const questionedUser = await users.findByPk(data.userId)
+        const userEmail = questionedUser.email
+        
+        await sendEmail({
+            email:userEmail,
+            subject:`${answeredUser.username} Answer to your question`,
+            text:answerText
+        })
+
      await sequelize.query(
         `INSERT INTO answer_${organizationNumber} (answerText,userId,questionId)
         VALUES(?,?,?)`,{
@@ -256,6 +267,8 @@ exports.renderSingleQuestion = async (req, res) => {
             replacements:[answerText,userId,questionId]
         }
     )
+    
+
     res.redirect(`/question/${questionId}`)
   }
 
