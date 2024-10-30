@@ -29,7 +29,8 @@ app.set("view engine", "ejs");
 
 //routes
 const organizationRoute = require('./routes/organizationRoute')
-const authRoute = require('./routes/authRoute')
+const authRoute = require('./routes/authRoute');
+const { promisify } = require("util");
 
 app.use('',organizationRoute)
 app.use('',authRoute)
@@ -42,6 +43,7 @@ app.get("/", (req, res) => {
     res.render("home.ejs");
 });
 
+
 // Google OAuth2 Strategy
 const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
@@ -53,6 +55,18 @@ passport.use(new GoogleStrategy({
     userProfile = profile;
     return done(null, userProfile);
 }));
+app.use(async(req,res,next)=>{
+    const token = req.cookies.token 
+    if(token){
+        const decryptedResult = await promisify(jwt.verify)(token,process.env.JWT_SECRET)
+        if(decryptedResult && decryptedResult.id){
+            res.locals.currentUserRole = decryptedResult.role
+        }
+        console.log("hello",decryptedResult)
+    }
+  
+    next()
+  })
 
 // Routes
 app.get("/auth/google", passport.authenticate('google', {

@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
       currentOrgNumber:{
         type: DataTypes.INTEGER
         
+      },
+      role:{
+        type: DataTypes.STRING,
+        defaultValue: "user"
       }
 
     

@@ -107,7 +107,7 @@
       <div class="container-fluid">
         <!--  Row 1 -->
 
-       <!-- <% if(currentUserRole == 'admin'){ %> -->
+       <% if(currentUserRole == 'admin'){ %>
         <div class="row">
           <div class="col-lg-8 d-flex align-items-stretch">
             <div class="card w-100">
@@ -133,7 +133,7 @@
                       </tr>
                     </thead>
                     <tbody>
-             <!-- <% users.forEach((user)=>{ %>
+             <% users.forEach((user)=>{ %>
               <tr>
                 <td class="border-bottom-0"><h6 class="fw-semibold mb-0"><%- user.id %></h6></td>
                 <td class="border-bottom-0">
@@ -150,7 +150,7 @@
         
               </tr> 
               
-             <% }) %> -->
+             <% }) %>
                     </tbody>
                   </table>
                 </div>
@@ -186,11 +186,11 @@
                       </tr>
                     </thead>
                     <tbody>
-             <!-- <% organizations.forEach((organization)=>{ %>
+             <% organizations.forEach((organization)=>{ %>
               <tr>
           
                 <td class="border-bottom-0">
-                    <h6 class="fw-semibold mb-1"><%- organization.name %></h6>
+                    <h6 class="fw-semibold mb-1"><%- organization.organizationName %></h6>
                 </td>
                 <td class="border-bottom-0">
                   <p class="mb-0 fw-normal"><%- organization.email %></p>
@@ -209,7 +209,7 @@
         
               </tr> 
               
-             <% }) %> -->
+             <% }) %>
                     </tbody>
                   </table>
                 </div>
@@ -217,7 +217,7 @@
             </div>
           </div>
         </div>
-       <!-- <% } %> -->
+       <% } %>
         <div style="height: 90vh;width: 60vw; display: flex; justify-content: center; align-items: center;">
       <h1>Welcome to unknown</h1>
         </div>

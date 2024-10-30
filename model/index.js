@@ -1,5 +1,6 @@
 const dbConfig = require("../config/dbConfig");
 const { Sequelize, DataTypes } = require("sequelize");
+const seedAdmin = require("../sevices/adminSeeder.js");
 
 // la sequelize yo config haru lag ani database connect gardey vaneko hae 
 const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
@@ -20,6 +21,7 @@ sequelize
   .authenticate()
   .then(() => {
     console.log("CONNECTED!!");
+    seedAdmin(db.users)
   })
   .catch((err) => {
     console.log("Error" + err);

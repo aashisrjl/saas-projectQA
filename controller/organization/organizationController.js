@@ -122,15 +122,26 @@ exports.createAnswerTable = async(req,res)=>{
 }
 
 exports.renderDashboard = async(req,res)=>{
-    // let currentUserRole = 'admin';
-    // const userId = req.userId
-    // const users = await users.findAll({
-    //     where:{
-    //         id:userId
-    //     }
-    // })
+    let currentUserRole = 'admin';
+    const user = await users.findAll()
 
-    res.render('dashboard/index.ejs',{currentUserRole});
+    const userOrgNumber = await sequelize.query(
+        `SELECT organizationNumber FROM  users_org ` ,
+        {
+            type: QueryTypes.SELECT
+        }
+    )
+
+    let orgDatas = [];
+    for(var i=0;i<userOrgNumber.length;i++){
+      const [orgData] =   await sequelize.query(
+            `SELECT * FROM organization_${userOrgNumber[i].organizationNumber} `
+        )
+        orgDatas.push({...orgData[0],organizationNumber: userOrgNumber[i].organizationNumber});
+        
+    }
+
+    res.render('dashboard/index.ejs',{currentUserRole,users:user,organizations:orgDatas});
 }
 
 exports.renderForumPage = async(req,res)=>{
@@ -421,4 +432,9 @@ exports.renderSingleQuestion = async (req, res) => {
                 res.send("Invalid invitation link");
             }
   }
+
+
+
+   
+ 
 
